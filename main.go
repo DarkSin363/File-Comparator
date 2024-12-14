@@ -19,7 +19,7 @@ func main() {
 	case "size":
 		CompareSize()
 	case "content":
-		CompareContent() 
+		CompareContent()
 	case "hash":
 		CompareHash()
 	case "all":
@@ -27,6 +27,4 @@ func main() {
 		CompareContent()
         CompareHash() 
 	}
-
-	
 }
