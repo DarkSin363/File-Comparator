@@ -9,8 +9,13 @@ import (
 	"bufio"
 )
 
-func CompareSize() {
-	fileStat1, fileStat2 := StatFiles(FilePath1, FilePath2)
+func CompareSize() error{
+	fileStat1, fileStat2, err := StatFiles(FilePath1, FilePath2)
+
+	if err != nil {
+		return err
+	}
+
 	fmt.Println("\n### Comparison of file sizes ###")
 	fmt.Printf("\nSize of 1st file: %d byte | Size of 2nd file: %d byte\n", fileStat1.Size(), fileStat2.Size())
 	if fileStat1.Size() == fileStat2.Size() {
@@ -18,19 +23,22 @@ func CompareSize() {
 	} else {
 		fmt.Println("\nFiles differ in size")
 	}
+	return nil
 }
 
-func CompareContent(){
+func CompareContent() error{
 
 	file1, err := os.Open(FilePath1)
 	if err != nil {
 		log.Println("File can't be open", err)
+		return err
 	}
 	defer file1.Close()
 
 	file2, err := os.Open(FilePath2)
 	if err != nil {
 		log.Println("File can't be open", err)
+		return err
 	}
 	defer file2.Close()
 
@@ -45,9 +53,11 @@ func CompareContent(){
 
         if err1 != nil && err1 != io.EOF {
 			log.Println("Reading error", err1)
+			return err1
         }
         if err2 != nil && err2 != io.EOF {
             log.Println("Reading error", err2)
+			return err2
         }
 
         if err1 == io.EOF && err2 == io.EOF {
@@ -56,25 +66,27 @@ func CompareContent(){
 
         if byte1 != byte2 {
 			fmt.Println("\nFiles differ in content")
-			return
+			return nil
         }
     }
 
     fmt.Println("\nFiles are identical in content")
-   
+    return nil
 } 
 
-func CompareHash() {
+func CompareHash() error{
 
 	file1, err := os.Open(FilePath1)
 	if err != nil {
 		log.Println("File can't be open", err)
+		return err
 	}
 	defer file1.Close()
 
 	file2, err := os.Open(FilePath2)
 	if err != nil {
 		log.Println("File can't be open", err)
+		return err
 	}
 	defer file2.Close()
 
@@ -84,11 +96,13 @@ func CompareHash() {
 	_, err1 := io.Copy(hash1, file1)
 	if err1 != nil {
 		log.Println("Copy error", err1)
+		return err1
 	}
 
 	_, err2 := io.Copy(hash2, file2)
 	if err2 != nil {
 		log.Println("Copy error", err2)
+		return err2
 	}
 
 	fileHash1 := hash1.Sum(nil)
@@ -101,10 +115,11 @@ func CompareHash() {
 	for i := range fileHash1 {
 		if fileHash1[i] != fileHash2[i] {
 			fmt.Println("\nFiles differ in SHA-256")
-			return
+			return nil
 		}
 	}
 	fmt.Println("\nFiles are identical in SHA-256")
+	return nil
 }
 
 func CompareAll(mode string){
