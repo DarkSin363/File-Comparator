@@ -24,15 +24,13 @@ func CompareContent(){
 
 	file1, err := os.Open(FilePath1)
 	if err != nil {
-		fmt.Println("File can't be open")
-		log.Fatal(err)
+		log.Println("File can't be open", err)
 	}
 	defer file1.Close()
 
 	file2, err := os.Open(FilePath2)
 	if err != nil {
-		fmt.Println("File can't be open")
-		log.Fatal(err)
+		log.Println("File can't be open", err)
 	}
 	defer file2.Close()
 
@@ -46,10 +44,10 @@ func CompareContent(){
         byte2, err2 := reader2.ReadByte()
 
         if err1 != nil && err1 != io.EOF {
-			log.Fatal(err1)
+			log.Println("Reading error", err1)
         }
         if err2 != nil && err2 != io.EOF {
-            log.Fatal(err2)
+            log.Println("Reading error", err2)
         }
 
         if err1 == io.EOF && err2 == io.EOF {
@@ -70,15 +68,13 @@ func CompareHash() {
 
 	file1, err := os.Open(FilePath1)
 	if err != nil {
-		fmt.Println("File can't be open")
-		log.Fatal(err)
+		log.Println("File can't be open", err)
 	}
 	defer file1.Close()
 
 	file2, err := os.Open(FilePath2)
 	if err != nil {
-		fmt.Println("File can't be open")
-		log.Fatal(err)
+		log.Println("File can't be open", err)
 	}
 	defer file2.Close()
 
@@ -87,12 +83,12 @@ func CompareHash() {
 
 	_, err1 := io.Copy(hash1, file1)
 	if err1 != nil {
-		log.Fatal(err1)
+		log.Println("Copy error", err1)
 	}
 
 	_, err2 := io.Copy(hash2, file2)
 	if err2 != nil {
-		log.Fatal(err2)
+		log.Println("Copy error", err2)
 	}
 
 	fileHash1 := hash1.Sum(nil)
