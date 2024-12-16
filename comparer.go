@@ -1,19 +1,26 @@
 package main
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"fmt"
 	"io"
 	"log"
 	"os"
-	"bufio"
 )
 
-func CompareSize() error{
-	fileStat1, fileStat2, err := StatFiles(FilePath1, FilePath2)
+func CompareSize(filePath1, filePath2 string) (bool, error) {
 
+	fileStat1, err := os.Stat(filePath1)
 	if err != nil {
-		return err
+		log.Println("File1 is not exist", err)
+		return false, err
+	}
+
+	fileStat2, err2 := os.Stat(filePath2)
+	if err2 != nil {
+		log.Println("File2 is not exist", err2)
+		return false, err
 	}
 
 	fmt.Println("\n### Comparison of file sizes ###")
@@ -22,87 +29,88 @@ func CompareSize() error{
 		fmt.Println("\nFiles are identical of size")
 	} else {
 		fmt.Println("\nFiles differ in size")
+		return false, nil
 	}
-	return nil
+	return true, nil
 }
 
-func CompareContent() error{
+func CompareContent(filePath1, filePath2 string) (bool, error) {
 
-	file1, err := os.Open(FilePath1)
+	file1, err := os.Open(filePath1)
 	if err != nil {
-		log.Println("File can't be open", err)
-		return err
+		log.Println("File1 can't be open", err)
+		return false, err
 	}
 	defer file1.Close()
 
-	file2, err := os.Open(FilePath2)
+	file2, err := os.Open(filePath2)
 	if err != nil {
-		log.Println("File can't be open", err)
-		return err
+		log.Println("File2 can't be open", err)
+		return false, err
 	}
 	defer file2.Close()
 
 	reader1 := bufio.NewReader(file1)
-    reader2 := bufio.NewReader(file2)
-    
+	reader2 := bufio.NewReader(file2)
+
 	fmt.Println("\n### Comparison of file contents ###")
 
-    for {
-        byte1, err1 := reader1.ReadByte()
-        byte2, err2 := reader2.ReadByte()
+	for {
 
-        if err1 != nil && err1 != io.EOF {
-			log.Println("Reading error", err1)
-			return err1
-        }
-        if err2 != nil && err2 != io.EOF {
-            log.Println("Reading error", err2)
-			return err2
-        }
+		byte1, err := reader1.ReadByte()
+		if err != nil && err != io.EOF {
+			log.Println("Reading file1 error", err)
+			return false, err
+		}
 
-        if err1 == io.EOF && err2 == io.EOF {
-            break
-        }
+		byte2, err := reader2.ReadByte()
+		if err != nil && err != io.EOF {
+			log.Println("Reading file2 error", err)
+			return false, err
+		}
 
-        if byte1 != byte2 {
+		if err == io.EOF && err == io.EOF {
+			break
+		}
+
+		if byte1 != byte2 {
 			fmt.Println("\nFiles differ in content")
-			return nil
-        }
-    }
+			return false, nil
+		}
+	}
 
-    fmt.Println("\nFiles are identical in content")
-    return nil
-} 
+	fmt.Println("\nFiles are identical in content")
+	return true, nil
+}
 
-func CompareHash() error{
+func CompareHash(filePath1, filePath2 string) (bool, error) {
 
-	file1, err := os.Open(FilePath1)
+	file1, err := os.Open(filePath1)
 	if err != nil {
-		log.Println("File can't be open", err)
-		return err
+		log.Println("File1 can't be open", err)
+		return false, err
 	}
 	defer file1.Close()
 
-	file2, err := os.Open(FilePath2)
+	file2, err := os.Open(filePath2)
 	if err != nil {
-		log.Println("File can't be open", err)
-		return err
+		log.Println("File2 can't be open", err)
+		return false, err
 	}
 	defer file2.Close()
 
 	hash1 := sha256.New()
-	hash2 := sha256.New()
-
 	_, err1 := io.Copy(hash1, file1)
 	if err1 != nil {
-		log.Println("Copy error", err1)
-		return err1
+		log.Println("Copy file1 error", err1)
+		return false, err1
 	}
 
+	hash2 := sha256.New()
 	_, err2 := io.Copy(hash2, file2)
 	if err2 != nil {
-		log.Println("Copy error", err2)
-		return err2
+		log.Println("Copy file2 error", err2)
+		return false, err2
 	}
 
 	fileHash1 := hash1.Sum(nil)
@@ -115,15 +123,24 @@ func CompareHash() error{
 	for i := range fileHash1 {
 		if fileHash1[i] != fileHash2[i] {
 			fmt.Println("\nFiles differ in SHA-256")
-			return nil
+			return false, nil
 		}
 	}
 	fmt.Println("\nFiles are identical in SHA-256")
-	return nil
+	return true, nil
 }
 
-func CompareAll(mode string){
-    CompareSize()
-    CompareContent()
-    CompareHash()
+func CompareAll(filePath1, filePath2 string) {
+	firstCompare, _ := CompareSize(filePath1, filePath2)
+	if firstCompare == false {
+		fmt.Println("\nFiles differ in content")
+		fmt.Println("\nFiles differ in SHA-256")
+	} else {
+		secondCompare, _ := CompareContent(filePath1, filePath2)
+		if secondCompare == false {
+			fmt.Println("\nFiles differ in SHA-256")
+		} else {
+			CompareHash(filePath1, filePath2)
+		}
+	}
 }
