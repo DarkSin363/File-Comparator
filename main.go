@@ -2,31 +2,27 @@ package main
 
 import "flag"
 
-var FilePath1, FilePath2, Mode string
-
 func main() {
 
 	//home/darksin/Dev/diffChecker/testRead1.txt
 	//../diffChecker/testRead2.txt
 
-	flag.StringVar(&FilePath1, "file1", "", "The path to first file")
-	flag.StringVar(&FilePath2, "file2", "", "The path to second file")
-	flag.StringVar(&Mode, "mode", "", "Selecting a file comparison option")
+	var filePath1, filePath2, mode string
+
+	flag.StringVar(&filePath1, "file1", "", "The path to first file")
+	flag.StringVar(&filePath2, "file2", "", "The path to second file")
+	flag.StringVar(&mode, "mode", "", "Selecting a file comparison option")
 
 	flag.Parse()
 
-	switch Mode {
+	switch mode {
 	case "size":
-		CompareSize()
+		CompareSize(filePath1, filePath2)
 	case "content":
-		CompareContent() 
+		CompareContent(filePath1, filePath2)
 	case "hash":
-		CompareHash()
+		CompareHash(filePath1, filePath2)
 	case "all":
-        CompareSize()
-		CompareContent()
-        CompareHash() 
+		CompareAll(filePath1, filePath2)
 	}
-
-	
 }
